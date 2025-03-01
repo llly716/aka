@@ -82,7 +82,7 @@ port: 443"#,
             .and_then(|v| yaml::from_value(v).ok())
         {
             res.headers_mut().append(
-                "subscription-userinfo",
+                "Subscription-Userinfo",
                 &format!("upload={upload}; download={download}; total={total}; expire={expire}",),
             )?;
         }
