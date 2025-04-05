@@ -48,7 +48,7 @@ async fn fetch(req: Request, _env: Env, _ctx: Context) -> Result<Response> {
                 0,
                 yaml::from_str(
                     r#"name: "此订阅由github.com/Buer-Nahida/akasha-subscriber虚空订阅器生成"
-server: nahida.im
+server: 127.0.0.1
 type: hysteria2
 port: 443"#,
                 )?,
