@@ -57,13 +57,13 @@ impl Hysteria2 {
                         let end: u16 = ports_range[pos + 1..]
                             .parse()
                             .expect("Invalid `ports` option");
-                        start..=end
+                        (start..=end).collect::<Vec<_>>()
                     } else {
-                        let port: u16 = ports_range.parse().expect("Invalid `ports` option");
-                        port..=port
+                        vec![ports_range.parse::<u16>().expect("Invalid `ports` option")]
                     }
                 })
-                .map(|ports_range| rand::random_range(ports_range))
+                .map(|ports_range| ports_range)
+                .flatten()
                 .collect();
             random_ports[rand::random_range(0..random_ports.len())]
         });
