@@ -135,12 +135,13 @@ impl TryInto<UrlStyleProxies> for ClashStyleProxies {
                     .and_then(|t| t.as_str())
                     .expect("Must specify proxy type")
                 {
-                    "hysteria2" => yaml::from_value::<Hysteria2>(proxy.into())?.into_string(),
-                    "vless" => yaml::from_value::<Vless>(proxy.into())?.into_string(),
-                    _ => "".into(),
+                    "hysteria2" => Some(yaml::from_value::<Hysteria2>(proxy.into())?.into_string()),
+                    "vless" => Some(yaml::from_value::<Vless>(proxy.into())?.into_string()),
+                    _ => None,
                 },
             );
         }
+        let urls: Vec<_> = urls.into_iter().flatten().collect();
         Ok(UrlStyleProxies(urls.join("\n")))
     }
 }
