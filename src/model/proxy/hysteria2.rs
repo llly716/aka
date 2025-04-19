@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use serde::{Deserialize, Serialize};
 
@@ -41,12 +43,32 @@ impl Hysteria2 {
         let name = utf8_percent_encode(&name, NON_ALPHANUMERIC);
         let skip_cert_verify = skip_cert_verify.map(|flag| flag as u8);
         let alpn = alpn.map(encode_alpn);
-        let ports = ports.map_or_else(
-            || port.map(|port| format!(":{port}")).unwrap_or_default(),
-            |ports| format!(":{ports}").replace("/", ","),
-        );
+        let port = port.unwrap_or_else(|| {
+            let random_ports: Vec<_> = ports
+                .as_deref()
+                .expect("Must provide `port` or `ports`")
+                .replace("/", ",")
+                .split(',')
+                .map(|ports_range| {
+                    let separator = ports_range.find('-');
+                    if let Some(pos) = separator {
+                        let start: u16 =
+                            ports_range[..pos].parse().expect("Invalid `ports` option");
+                        let end: u16 = ports_range[pos + 1..]
+                            .parse()
+                            .expect("Invalid `ports` option");
+                        start..=end
+                    } else {
+                        let port: u16 = ports_range.parse().expect("Invalid `ports` option");
+                        port..=port
+                    }
+                })
+                .map(|ports_range| rand::random_range(ports_range))
+                .collect();
+            random_ports[rand::random_range(0..random_ports.len())]
+        });
         format!(
-            "hysteria2://{password}@{server}{ports}{}#{name}",
+            "hysteria2://{password}@{server}:{port}{}#{name}",
             match [
                 sni.map(param("sni")),
                 obfs.map(param("obfs")),
